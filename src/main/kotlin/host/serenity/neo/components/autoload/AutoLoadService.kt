@@ -9,9 +9,7 @@ fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
 
     try {
         classpath.getTopLevelClassesRecursive(packageName)
-                .map {
-                    it.load()
-                }
+                .map { it.load() }
                 .filter { descriptor.getTargetClass().isAssignableFrom(it) }
                 .filter { it.constructors.isNotEmpty() }
                 .forEach {
