@@ -1,22 +1,25 @@
 @file:JvmName("AutoLoadService")
 package host.serenity.neo.components.autoload
 
-import com.google.common.reflect.ClassPath
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
 
 fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
-    val classpath = ClassPath.from(descriptor.javaClass.classLoader)
-    val packageName = descriptor.javaClass.name.dropLast(descriptor.javaClass.simpleName.length + 1)
+    val descriptorPackage = descriptor.javaClass.name.dropLast(descriptor.javaClass.simpleName.length + 1)
+    val targetClass: Class<T> = descriptor.getTargetClass()
 
-    try {
-        classpath.getTopLevelClassesRecursive(packageName)
-                .map { it.load() }
-                .filter { descriptor.getTargetClass().isAssignableFrom(it) }
-                .filter { it.constructors.isNotEmpty() }
-                .forEach {
-                    @Suppress("UNCHECKED_CAST")
-                    consumer(it as Class<T>)
-                }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
+    val scanner = FastClasspathScanner(descriptorPackage).addClassLoader(targetClass.classLoader)
+
+    val names =
+            if (targetClass.isInterface)
+                scanner.scan().getNamesOfClassesImplementing(targetClass)
+            else
+                scanner.scan().getNamesOfSubclassesOf(targetClass)
+
+    names.asSequence()
+            .map { targetClass.classLoader.loadClass(it) }
+            .filter { targetClass.isAssignableFrom(it) }
+            .forEach {
+                @Suppress("UNCHECKED_CAST")
+                consumer(it as Class<T>)
+            }
 }
