@@ -1,6 +1,6 @@
 # NeoComponentsAutoLoad
 
-Simple autoloading API using Guava reflection
+Simple autoloading API using fast-classpath-scanner
 
 The autoloader will only load classes that can be instantiated.
 
