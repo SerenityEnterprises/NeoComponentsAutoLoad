@@ -17,14 +17,15 @@ fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
             else
                 scanner.scan().getNamesOfSubclassesOf(targetClass)
 
-    names.asSequence()
-            .map { targetClass.classLoader.loadClass(it) }
-            .filter { targetClass.isAssignableFrom(it) && it != targetClass }
-            .filter { !Modifier.isAbstract(it.modifiers) }
-            .forEach {
+    for (name in names) {
+        val potentialClass = targetClass.classLoader.loadClass(name)
+        if (targetClass.isAssignableFrom(potentialClass) && targetClass != potentialClass) {
+            if (!Modifier.isAbstract(targetClass.modifiers)) {
                 @Suppress("UNCHECKED_CAST")
-                consumer(it as Class<T>)
+                consumer(potentialClass as Class<T>)
             }
+        }
+    }
 }
 
 fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: Consumer<Class<T>>) {
