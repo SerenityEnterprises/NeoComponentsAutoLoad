@@ -2,6 +2,7 @@
 package host.serenity.neo.components.autoload
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
+import java.lang.reflect.Modifier
 
 fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
     val descriptorPackage = descriptor.javaClass.name.dropLast(descriptor.javaClass.simpleName.length + 1)
@@ -17,7 +18,8 @@ fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
 
     names.asSequence()
             .map { targetClass.classLoader.loadClass(it) }
-            .filter { targetClass.isAssignableFrom(it) }
+            .filter { targetClass.isAssignableFrom(it) && it != targetClass }
+            .filter { !Modifier.isAbstract(it.modifiers) }
             .forEach {
                 @Suppress("UNCHECKED_CAST")
                 consumer(it as Class<T>)
