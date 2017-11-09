@@ -2,7 +2,6 @@
 package host.serenity.neo.components.autoload
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
-import java.lang.reflect.Modifier
 import java.util.function.Consumer
 
 fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
@@ -20,10 +19,8 @@ fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
     for (name in names) {
         val potentialClass = targetClass.classLoader.loadClass(name)
         if (targetClass.isAssignableFrom(potentialClass) && targetClass != potentialClass) {
-            if (!Modifier.isAbstract(targetClass.modifiers)) {
-                @Suppress("UNCHECKED_CAST")
-                consumer(potentialClass as Class<T>)
-            }
+            @Suppress("UNCHECKED_CAST")
+            consumer(potentialClass as Class<T>)
         }
     }
 }
