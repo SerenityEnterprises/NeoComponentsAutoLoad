@@ -3,6 +3,7 @@ package host.serenity.neo.components.autoload
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
 import java.lang.reflect.Modifier
+import java.util.function.Consumer
 
 fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
     val descriptorPackage = descriptor.javaClass.name.dropLast(descriptor.javaClass.simpleName.length + 1)
@@ -24,4 +25,8 @@ fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: (Class<T>) -> Unit) {
                 @Suppress("UNCHECKED_CAST")
                 consumer(it as Class<T>)
             }
+}
+
+fun <T> load(descriptor: AutoLoadDescriptor<T>, consumer: Consumer<Class<T>>) {
+    load(descriptor, { consumer.accept(it) })
 }
